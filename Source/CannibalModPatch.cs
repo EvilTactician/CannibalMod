@@ -57,7 +57,47 @@ namespace CannibalModPatch {
             if (!IsHumanLike(__instance)) {
                 return;
             }
-            ingester.story.traits.GainTrait(new Trait(TraitDefOf.Cannibal, 0, true));
+            // Set base chance
+            float chance = 0.01f; // base chance 1%
+            
+            // Start checking for existing traits to determine chance modifiers
+            if (ingester.story.traits.HasTrait(TraitDefOf.Psychopath)) {
+                chance += chance + 0.05f; // Psychopath +5% base chance
+            }
+            if (ingester.story.traits.HasTrait(TraitDefOf.Bloodlust)) {
+                chance += chance + 0.025f; // Bloodlust +2.5% base chance
+            }
+            if (ingester.story.traits.HasTrait(TraitDefOf.Kind)) {
+                chance = chance * 0.25f; // Kind 75% lower base chance
+            }
+            // not working - how to check if a pawn is incapable of violence?
+            // var disabled = ingester.story.childhood.DisabledWorkTypes(WorkTypeDef disabled);
+            /*
+            var noViolence = ingester.story.childhood.workDisables;
+
+            if (noViolence.Contains("Violence") {
+                chance = 0f; // No Violence lowers base chance by 100%
+            } */
+
+            // roll some "dice" - get a value between 1 and 100 pct
+            float roll = UnityEngine.Random.Range(0.0f, 1.0f);
+
+            // now test the roll vs. the chance set previously and add trait if this is relevant
+            if (roll < chance) {
+                ingester.story.traits.GainTrait(new Trait(TraitDefOf.Cannibal, 0, true));
+                // temporary message for debugging purposes
+                Messages.Message("At a chance of " + chance + " and a roll of " + roll + ", " + ingester.Name + " just gained the cannibal trait.", ingester, MessageTypeDefOf.NeutralEvent); 
+            }
+            // Debugging, I want to see what happens even if the roll "fails"
+            else {
+                Messages.Message("At a chance of " + chance + " and a roll of " + roll + ", " + ingester.Name + " did NOT gain the cannibal trait.", ingester, MessageTypeDefOf.NeutralEvent);
+            }
+
+            // TO-DO - distinguish between colonist and prisoner
+
+
+            // TO-DO - Sort better Messaging to End-User
+
             /* Messages.Message("TROLL", ingester, MessageTypeDefOf.NeutralEvent);
             Find.WindowStack.Add(new Dialog_MessageBox(ingester.Name + " just turned cannibalist."));
             var semTex = new Dialog_MessageBox(ingester.Name + " just turned cannibalist.");
